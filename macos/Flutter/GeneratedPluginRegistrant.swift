@@ -1,0 +1,14 @@
+//
+//  Generated file. Do not edit.
+//
+
+import FlutterMacOS
+import Foundation
+
+import camera_macos
+import geolocator_apple
+
+func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  CameraMacosPlugin.register(with: registry.registrar(forPlugin: "CameraMacosPlugin"))
+  GeolocatorPlugin.register(with: registry.registrar(forPlugin: "GeolocatorPlugin"))
+}
