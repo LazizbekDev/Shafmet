@@ -48,7 +48,7 @@ class DashboardSharedWidgets {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -107,7 +107,7 @@ class DashboardSharedWidgets {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -130,7 +130,7 @@ class DashboardSharedWidgets {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.08),
+            color: AppColors.primaryBlue.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -160,7 +160,7 @@ class DashboardSharedWidgets {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.primaryBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -186,7 +186,7 @@ class DashboardSharedWidgets {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Icon(
           icon,
-          color: isSelected ? AppColors.primaryBlue : AppColors.textGrey.withOpacity(0.6),
+          color: isSelected ? AppColors.primaryBlue : AppColors.textGrey.withValues(alpha: 0.6),
           size: 24,
         ),
       ),

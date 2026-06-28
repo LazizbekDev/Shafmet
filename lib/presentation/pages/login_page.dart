@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/dummy_auth_service.dart';
 import '../../domain/models/user_role.dart';
-import '../widgets/liquid_widgets.dart';
 import 'attendance_dashboard_page.dart';
 import 'manager_dashboard_page.dart';
 import 'admin_dashboard_page.dart';
@@ -178,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryBlue.withOpacity(0.4)),
+        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.4)),
       ),
       child: TextField(
         controller: controller,
@@ -187,7 +186,7 @@ class _LoginPageState extends State<LoginPage> {
         style: const TextStyle(fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: AppColors.textGrey.withOpacity(0.7)),
+          hintStyle: TextStyle(color: AppColors.textGrey.withValues(alpha: 0.7)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
         ),

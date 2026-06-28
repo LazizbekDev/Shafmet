@@ -8,7 +8,6 @@ import '../../utils/face_detection_helper.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
-import '../widgets/liquid_widgets.dart';
 import '../widgets/liveness_visuals.dart';
 
 /// "Yuzni va manzil Tasdiqlash" sahifasi.
@@ -39,7 +38,6 @@ class _FaceScanViewState extends State<_FaceScanView> {
   final FaceDetectionHelper _faceHelper = FaceDetectionHelper();
   bool _isStreaming = false;
   bool _blinkDetected = false;
-  final bool _headTurnDetected = false;
 
   @override
   void initState() {
@@ -222,7 +220,7 @@ class _FaceScanViewState extends State<_FaceScanView> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.primaryBlue.withOpacity(0.8),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.8),
                           width: 6,
                         ),
                       ),

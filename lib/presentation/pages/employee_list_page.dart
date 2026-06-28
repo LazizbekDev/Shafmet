@@ -53,7 +53,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: 5,
-                separatorBuilder: (_, __) => Divider(color: Colors.grey.withOpacity(0.1), height: 1),
+                separatorBuilder: (_, __) => Divider(color: Colors.grey.withValues(alpha: 0.1), height: 1),
                 itemBuilder: (context, index) {
                   return _buildEmployeeRow();
                 },
@@ -121,7 +121,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: _showPresent ? AppColors.primaryBlue : AppColors.textGrey.withOpacity(0.5),
+              color: _showPresent ? AppColors.primaryBlue : AppColors.textGrey.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -140,7 +140,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: !_showPresent ? Colors.redAccent : AppColors.textGrey.withOpacity(0.5),
+              color: !_showPresent ? Colors.redAccent : AppColors.textGrey.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -156,7 +156,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -164,9 +164,9 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
       ),
       child: TextField(
         decoration: InputDecoration(
-          icon: Icon(Icons.search, color: AppColors.textGrey.withOpacity(0.5)),
+          icon: Icon(Icons.search, color: AppColors.textGrey.withValues(alpha: 0.5)),
           hintText: 'Nimadir qidiring...',
-          hintStyle: TextStyle(color: AppColors.textGrey.withOpacity(0.5)),
+          hintStyle: TextStyle(color: AppColors.textGrey.withValues(alpha: 0.5)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
@@ -208,7 +208,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.primaryBlue.withOpacity(0.7),
+                color: AppColors.primaryBlue.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500,
               ),
             ),

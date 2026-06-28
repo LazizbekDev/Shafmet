@@ -96,7 +96,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -130,7 +130,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
                     '8:00 dan 19:00',
                     style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textGrey.withOpacity(0.8),
+                      color: AppColors.textGrey.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -142,7 +142,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
             'ishga kelganligizni tasdiqlang va\nbemalol oz ish faoliyatingizni davm\nettiring',
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textGrey.withOpacity(0.8),
+              color: AppColors.textGrey.withValues(alpha: 0.8),
               height: 1.5,
             ),
           ),

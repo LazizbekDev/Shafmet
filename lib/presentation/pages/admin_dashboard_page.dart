@@ -108,7 +108,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryBlue.withOpacity(0.3),
+              color: AppColors.primaryBlue.withValues(alpha: 0.3),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -117,15 +117,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Row(
+            const Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 26,
                   backgroundColor: Colors.white,
                   child: Icon(Icons.person, color: AppColors.primaryBlue, size: 30),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
+                SizedBox(width: 14),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -148,23 +148,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Colors.white),
+                Icon(Icons.chevron_right, color: Colors.white),
               ],
             ),
             const SizedBox(height: 16),
-            Divider(color: Colors.white.withOpacity(0.2), height: 1),
+            Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_month_outlined, color: Colors.white.withOpacity(0.9), size: 16),
+                    Icon(Icons.calendar_month_outlined, color: Colors.white.withValues(alpha: 0.9), size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'chor - 16 - iyun',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -173,12 +173,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 ),
                 Row(
                   children: [
-                    Icon(Icons.bar_chart, color: Colors.white.withOpacity(0.9), size: 16),
+                    Icon(Icons.bar_chart, color: Colors.white.withValues(alpha: 0.9), size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'Kunlik statistika',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -201,7 +201,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -209,9 +209,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       ),
       child: TextField(
         decoration: InputDecoration(
-          icon: Icon(Icons.search, color: AppColors.textGrey.withOpacity(0.5)),
+          icon: Icon(Icons.search, color: AppColors.textGrey.withValues(alpha: 0.5)),
           hintText: 'Nimadir qidiring...',
-          hintStyle: TextStyle(color: AppColors.textGrey.withOpacity(0.5)),
+          hintStyle: TextStyle(color: AppColors.textGrey.withValues(alpha: 0.5)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
