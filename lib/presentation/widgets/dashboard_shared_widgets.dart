@@ -120,7 +120,17 @@ class DashboardSharedWidgets {
     );
   }
 
-  static Widget buildBottomNav(int selectedIndex, Function(int) onTap) {
+  static Widget buildBottomNav(
+    int selectedIndex,
+    Function(int) onTap, {
+    List<String> labels = const ['asosiy', 'ish kunlari', 'xabarlar', 'profil'],
+    List<IconData> icons = const [
+      Icons.home_filled,
+      Icons.calendar_today_rounded,
+      Icons.chat_bubble_outline_rounded,
+      Icons.person_outline_rounded
+    ],
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
@@ -138,56 +148,70 @@ class DashboardSharedWidgets {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _navItem(Icons.home_filled, 'asosiy', 0, selectedIndex, onTap),
-              _navItem(Icons.calendar_today_outlined, '', 1, selectedIndex, onTap),
-              _navItem(Icons.chat_bubble_outline, '', 2, selectedIndex, onTap),
-              _navItem(Icons.person_outline, '', 3, selectedIndex, onTap),
-            ],
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(4, (index) {
+              return _navItem(
+                icon: icons[index],
+                label: labels[index],
+                index: index,
+                selectedIndex: selectedIndex,
+                onTap: onTap,
+              );
+            }),
           ),
         ),
       ),
     );
   }
 
-  static Widget _navItem(IconData icon, String label, int index, int selectedIndex, Function(int) onTap) {
+  static Widget _navItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required int selectedIndex,
+    required Function(int) onTap,
+  }) {
     final isSelected = selectedIndex == index;
-    
-    if (isSelected && label.isNotEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primaryBlue, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
 
     return GestureDetector(
       onTap: () => onTap(index),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Icon(
-          icon,
-          color: isSelected ? AppColors.primaryBlue : AppColors.textGrey.withValues(alpha: 0.6),
-          size: 24,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: isSelected
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryBlue.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? AppColors.primaryBlue
+                  : AppColors.textGrey.withValues(alpha: 0.6),
+              size: 24,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ]
+          ],
         ),
       ),
     );

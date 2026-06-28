@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../widgets/dashboard_shared_widgets.dart';
+import '../widgets/profile_tab_widget.dart';
 import 'employee_list_page.dart';
-import 'login_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -15,13 +15,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _selectedNavIndex = 0;
 
   void _onNavTapped(int index) {
-    if (index == 3) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
-    } else {
-      setState(() => _selectedNavIndex = index);
-    }
+    setState(() => _selectedNavIndex = index);
   }
 
   @override
@@ -29,28 +23,65 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildUserCard(context),
-              const SizedBox(height: 24),
-              _buildSearchBar(),
-              const SizedBox(height: 24),
-              DashboardSharedWidgets.buildSectionTitle('Ishchilar Nazorati'),
-              DashboardSharedWidgets.buildAttendanceStatsRow(),
-              const SizedBox(height: 12),
-              DashboardSharedWidgets.buildSectionTitle('Ishchilar Vazifasi'),
-              DashboardSharedWidgets.buildTasksStatsRow(),
-              const SizedBox(height: 24),
-            ],
-          ),
+        child: IndexedStack(
+          index: _selectedNavIndex,
+          children: [
+            _buildHomeTab(),
+            _buildPlaceholderTab('Ish kunlari jadvali'),
+            _buildPlaceholderTab('Xabar yuborish'),
+            _buildProfileTab(),
+          ],
         ),
       ),
-      bottomNavigationBar: DashboardSharedWidgets.buildBottomNav(_selectedNavIndex, _onNavTapped),
+      bottomNavigationBar: DashboardSharedWidgets.buildBottomNav(
+        _selectedNavIndex,
+        _onNavTapped,
+        labels: const ['asosiy', 'ish kunlari', 'xabar yuborish', 'profil'],
+      ),
+    );
+  }
+
+  Widget _buildHomeTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 24),
+          _buildUserCard(context),
+          const SizedBox(height: 24),
+          _buildSearchBar(),
+          const SizedBox(height: 24),
+          DashboardSharedWidgets.buildSectionTitle('Ishchilar Nazorati'),
+          DashboardSharedWidgets.buildAttendanceStatsRow(),
+          const SizedBox(height: 12),
+          DashboardSharedWidgets.buildSectionTitle('Ishchilar Vazifasi'),
+          DashboardSharedWidgets.buildTasksStatsRow(),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderTab(String title) {
+    return Center(
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textGrey,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileTab() {
+    return const ProfileTabWidget(
+      name: 'Javohir Hamroyev',
+      role: 'Admin',
+      position: 'Direktor',
     );
   }
 

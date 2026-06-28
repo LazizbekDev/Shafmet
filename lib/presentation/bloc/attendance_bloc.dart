@@ -1,3 +1,4 @@
+import 'package:attendance_app/data/models/attendance_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/attendance_repository.dart';
 import 'attendance_event.dart';
@@ -7,11 +8,9 @@ import 'attendance_state.dart';
 ///
 /// Oqim: StartFaceScan -> FaceFrameDetected (ko'p marta) -> SubmitAttendance -> Success/Failure
 class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
-  final AttendanceRepository _repository;
 
   AttendanceBloc({required AttendanceRepository repository})
-      : _repository = repository,
-        super(AttendanceInitial()) {
+      : super(AttendanceInitial()) {
     on<StartFaceScan>(_onStartFaceScan);
     on<FaceFrameDetected>(_onFaceFrameDetected);
     on<SubmitAttendance>(_onSubmitAttendance);
@@ -50,31 +49,39 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   ) async {
     emit(AttendanceSubmitting());
 
-    try {
-      // 1. Avval foydalanuvchi ofis hududida ekanligini tekshiramiz (Office Geofence).
-      final isInOffice = await _repository.isWithinOfficeArea();
-      if (!isInOffice) {
-        emit(const AttendanceFailure(
-          'Siz ofis hududidan tashqaridasiz. Davomat belgilash uchun ofisda bo\'lishingiz kerak.',
-        ));
-        return;
-      }
+    // -----------------------------------------------------------------------
+    // TODO(backend): Backend tayyor bo'lganda quyidagi comment'ni ochib,
+    // dummy emit'ni o'chirib tashlang.
+    // -----------------------------------------------------------------------
+    //
+    // try {
+    //   final isInOffice = await _repository.isWithinOfficeArea();
+    //   if (!isInOffice) {
+    //     emit(const AttendanceFailure(
+    //       'Siz ofis hududidan tashqaridasiz. Davomat belgilash uchun ofisda bo\'lishingiz kerak.',
+    //     ));
+    //     return;
+    //   }
+    //   final result = await _repository.markAttendance(
+    //     faceImageBytes: event.faceImageBytes,
+    //     latitude: 0.0,
+    //     longitude: 0.0,
+    //   );
+    //   if (result.success) {
+    //     emit(AttendanceSuccess(result));
+    //   } else {
+    //     emit(AttendanceFailure(result.message));
+    //   }
+    // } catch (e) {
+    //   emit(AttendanceFailure('Xatolik yuz berdi: $e'));
+    // }
 
-      // 2. Joriy joylashuvni olib, yuz rasmi bilan birga backendga yuboramiz.
-      final result = await _repository.markAttendance(
-        faceImageBytes: event.faceImageBytes,
-        latitude: 0.0, // Repository implementatsiyasi haqiqiy lokatsiyani oladi
-        longitude: 0.0,
-      );
-
-      if (result.success) {
-        emit(AttendanceSuccess(result));
-      } else {
-        emit(AttendanceFailure(result.message));
-      }
-    } catch (e) {
-      emit(AttendanceFailure('Xatolik yuz berdi: $e'));
-    }
+    // Hozircha developer preview uchun dummy success emit qilinadi.
+    await Future.delayed(const Duration(milliseconds: 500));
+    emit(AttendanceSuccess(AttendanceResult(
+      success: true,
+      message: 'Developer Preview — backend ulanganda haqiqiy javob keladi',
+    )));
   }
 
   void _onResetAttendance(

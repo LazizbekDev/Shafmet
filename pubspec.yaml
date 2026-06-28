@@ -17,6 +17,7 @@ dependencies:
   dio: ^5.4.3
   cupertino_icons: ^1.0.6
   camera_macos: ^0.0.9
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

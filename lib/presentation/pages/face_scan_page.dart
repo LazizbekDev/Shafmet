@@ -1,14 +1,17 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/repositories/attendance_repository_impl.dart';
 import '../../utils/face_detection_helper.dart';
+import '../../utils/secure_location_service.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
 import '../widgets/liveness_visuals.dart';
+import 'attendance_submit_preview_page.dart';
 
 /// "Yuzni va manzil Tasdiqlash" sahifasi.
 /// Markazda doira shaklidagi kamera ko'rinishi, atrofida liveness progress halqasi,
@@ -38,6 +41,13 @@ class _FaceScanViewState extends State<_FaceScanView> {
   final FaceDetectionHelper _faceHelper = FaceDetectionHelper();
   bool _isStreaming = false;
   bool _blinkDetected = false;
+  Uint8List? _capturedImageBytes;
+  double? _capturedLatitude;
+  double? _capturedLongitude;
+  double? _capturedAccuracyMeters;
+  bool _capturedIsMocked = false;
+  String _locationStatusText = '';
+  bool _isCapturing = false;
 
   @override
   void initState() {
@@ -95,23 +105,98 @@ class _FaceScanViewState extends State<_FaceScanView> {
             );
 
         // Liveness to'liq o'tganda - rasmni olib, tasdiqlashga yuboramiz.
-        if (_faceHelper.isLivenessPassed) {
+        if (_faceHelper.isLivenessPassed && !_isCapturing) {
           await _captureAndSubmit();
         }
       }
     });
   }
 
-  /// Liveness muvaffaqiyatli tugagach, statik rasm olib backendga yuborish.
+  /// Liveness muvaffaqiyatli tugagach, statik rasm olib ko'rsatish uchun saqlaydi.
+  /// Backend tayyor bo'lganda bu yerga API chaqiruvi qo'shiladi.
   Future<void> _captureAndSubmit() async {
-    if (_cameraController == null) return;
+    if (_cameraController == null || _isCapturing) return;
+    _isCapturing = true;
+
     await _cameraController!.stopImageStream();
 
     final picture = await _cameraController!.takePicture();
     final bytes = await picture.readAsBytes();
+    _capturedImageBytes = bytes;
+
+    // --- Xavfsiz lokatsiyani olish ---
+    // SecureLocationService mock GPS ni aniqlaydi va bir nechta o'lchov qiladi.
+    try {
+      final locationResult = await SecureLocationService.getSecureLocation(
+        onProgress: (msg) {
+          if (mounted) setState(() => _locationStatusText = msg);
+        },
+      );
+
+      _capturedLatitude = locationResult.latitude;
+      _capturedLongitude = locationResult.longitude;
+      _capturedAccuracyMeters = locationResult.accuracyMeters;
+      _capturedIsMocked = locationResult.isMocked;
+
+      // Mock aniqlansa foydalanuvchini ogohlantiramiz va jarayonni to'xtatamiz.
+      if (locationResult.isMocked && mounted) {
+        _showMockLocationWarning();
+        _isCapturing = false;
+        return;
+      }
+
+      // Aniqlik juda past bo'lsa ham ogohlantiramiz lekin yuborishga ruxsat beramiz.
+      if (!locationResult.isTrusted && mounted) {
+        setState(() {
+          _locationStatusText =
+              'Aniqlik past (${locationResult.accuracyMeters.toStringAsFixed(0)}m), '
+              'lekin GPS signali kuchayguncha kutilmoqda...';
+        });
+      }
+    } on LocationServiceException catch (e) {
+      if (mounted) {
+        setState(() => _locationStatusText = e.message);
+      }
+      _isCapturing = false;
+      return;
+    } catch (e) {
+      // Kutilmagan xato — baribir davom etamiz (koordinatlar null qoladi)
+      if (mounted) setState(() => _locationStatusText = 'GPS xatolik: $e');
+    }
 
     if (!mounted) return;
     context.read<AttendanceBloc>().add(SubmitAttendance(faceImageBytes: bytes));
+  }
+
+  void _showMockLocationWarning() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            SizedBox(width: 10),
+            Text('Soxta joylashuv!', style: TextStyle(fontSize: 18)),
+          ],
+        ),
+        content: const Text(
+          'Qurilmangizda soxta GPS ilovasi (Mock Location) faol. '
+          'Davomat belgilash uchun uni o\'chiring va qaytadan urinib ko\'ring.',
+          style: TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // FaceScanPage dan ham chiqamiz
+            },
+            child: const Text('Tushunarli', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -127,8 +212,22 @@ class _FaceScanViewState extends State<_FaceScanView> {
       backgroundColor: AppColors.background,
       body: BlocConsumer<AttendanceBloc, AttendanceState>(
         listener: (context, state) {
-          if (state is AttendanceSuccess) {
-            Navigator.of(context).pop(); // Muvaffaqiyatli tasdiqlangach orqaga qaytish
+          if (state is AttendanceSuccess || state is AttendanceSubmitting) {
+            // Backend tayyor bo'lguncha developer preview sahifasiga o'tamiz.
+            // Backend tayyor bo'lganda bu yerga haqiqiy success logikasi qo'shiladi.
+            if (state is AttendanceSubmitting) return;
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => AttendanceSubmitPreviewPage(
+                  faceImageBytes: _capturedImageBytes,
+                  latitude: _capturedLatitude,
+                  longitude: _capturedLongitude,
+                  accuracyMeters: _capturedAccuracyMeters,
+                  isMocked: _capturedIsMocked,
+                  timestamp: DateTime.now(),
+                ),
+              ),
+            );
           }
         },
         builder: (context, state) {
