@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../widgets/dashboard_shared_widgets.dart';
-import '../widgets/liquid_widgets.dart';
-import 'face_id_prep_page.dart';
+import 'employee_list_page.dart';
 import 'login_page.dart';
 
-class AttendanceDashboardPage extends StatefulWidget {
-  const AttendanceDashboardPage({super.key});
+class AdminDashboardPage extends StatefulWidget {
+  const AdminDashboardPage({super.key});
 
   @override
-  State<AttendanceDashboardPage> createState() => _AttendanceDashboardPageState();
+  State<AdminDashboardPage> createState() => _AdminDashboardPageState();
 }
 
-class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
+class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _selectedNavIndex = 0;
 
   void _onNavTapped(int index) {
@@ -38,31 +37,14 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               _buildHeader(),
               const SizedBox(height: 24),
               _buildUserCard(context),
-              const SizedBox(height: 28),
-              const Text(
-                'Topshiriqlar',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildTaskCard(
-                icon: Icons.cleaning_services_outlined,
-                title: 'Tozalikga Rioya hudud',
-                subtitle: 'hududdiy tozalik',
-                reportTime: '1 soatlik hisobot',
-                endTime: 'tugash vaqti 15:00',
-              ),
-              const SizedBox(height: 16),
-              _buildTaskCard(
-                icon: Icons.inventory_2_outlined,
-                title: 'Mahsulot Joylab Chqish',
-                subtitle: 'Polka Toldrsh',
-                reportTime: '1 soatlik hisobot',
-                endTime: 'tugash vaqti 15:00',
-              ),
+              const SizedBox(height: 24),
+              _buildSearchBar(),
+              const SizedBox(height: 24),
+              DashboardSharedWidgets.buildSectionTitle('Ishchilar Nazorati'),
+              DashboardSharedWidgets.buildAttendanceStatsRow(),
+              const SizedBox(height: 12),
+              DashboardSharedWidgets.buildSectionTitle('Ishchilar Vazifasi'),
+              DashboardSharedWidgets.buildTasksStatsRow(),
               const SizedBox(height: 24),
             ],
           ),
@@ -113,7 +95,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FaceIdPrepPage()),
+          MaterialPageRoute(builder: (_) => const EmployeeListPage()),
         );
       },
       child: Container(
@@ -157,7 +139,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'ichki do\'kon ishchisi',
+                        'Direktor',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
@@ -191,10 +173,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 ),
                 Row(
                   children: [
-                    Icon(Icons.access_time, color: Colors.white.withOpacity(0.9), size: 16),
+                    Icon(Icons.bar_chart, color: Colors.white.withOpacity(0.9), size: 16),
                     const SizedBox(width: 6),
                     Text(
-                      'face id dan o\'tish',
+                      'Kunlik statistika',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 13,
@@ -211,98 +193,28 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     );
   }
 
-  Widget _buildTaskCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String reportTime,
-    required String endTime,
-  }) {
+  Widget _buildSearchBar() {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.black,
-                child: Icon(icon, color: Colors.white),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Divider(color: Colors.grey.withOpacity(0.15), height: 1),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.access_time, color: Colors.orangeAccent, size: 16),
-                  const SizedBox(width: 6),
-                  Text(
-                    reportTime,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.orangeAccent,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.access_time, color: AppColors.primaryBlue, size: 16),
-                  const SizedBox(width: 6),
-                  Text(
-                    endTime,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+      child: TextField(
+        decoration: InputDecoration(
+          icon: Icon(Icons.search, color: AppColors.textGrey.withOpacity(0.5)),
+          hintText: 'Nimadir qidiring...',
+          hintStyle: TextStyle(color: AppColors.textGrey.withOpacity(0.5)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
       ),
     );
   }

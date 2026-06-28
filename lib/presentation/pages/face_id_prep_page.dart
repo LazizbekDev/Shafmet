@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../widgets/dashboard_shared_widgets.dart';
 import 'face_scan_page.dart';
+import 'login_page.dart';
 
 class FaceIdPrepPage extends StatefulWidget {
   const FaceIdPrepPage({super.key});
@@ -11,6 +13,20 @@ class FaceIdPrepPage extends StatefulWidget {
 
 class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
   int _selectedNavIndex = 0;
+
+  void _onNavTapped(int index) {
+    if (index == 3) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    } else {
+      setState(() => _selectedNavIndex = index);
+      if (index == 0) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +47,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: DashboardSharedWidgets.buildBottomNav(_selectedNavIndex, _onNavTapped),
     );
   }
 
@@ -174,84 +190,6 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _navItem(Icons.home_filled, 'asosiy', 0),
-              _navItem(Icons.calendar_today_outlined, '', 1),
-              _navItem(Icons.chat_bubble_outline, '', 2),
-              _navItem(Icons.person_outline, '', 3),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, int index) {
-    final isSelected = _selectedNavIndex == index;
-    
-    if (isSelected && label.isNotEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primaryBlue, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedNavIndex = index);
-        if (index == 0) {
-          Navigator.of(context).pop();
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Icon(
-          icon,
-          color: isSelected ? AppColors.primaryBlue : AppColors.textGrey.withOpacity(0.6),
-          size: 24,
-        ),
       ),
     );
   }
