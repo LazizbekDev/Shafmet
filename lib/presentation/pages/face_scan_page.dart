@@ -46,7 +46,7 @@ class _FaceScanViewState extends State<_FaceScanView> {
   double? _capturedLongitude;
   double? _capturedAccuracyMeters;
   bool _capturedIsMocked = false;
-  String _locationStatusText = '';
+  String locationStatusText = '';
   bool _isCapturing = false;
 
   @override
@@ -129,7 +129,7 @@ class _FaceScanViewState extends State<_FaceScanView> {
     try {
       final locationResult = await SecureLocationService.getSecureLocation(
         onProgress: (msg) {
-          if (mounted) setState(() => _locationStatusText = msg);
+          if (mounted) setState(() => locationStatusText = msg);
         },
       );
 
@@ -148,20 +148,20 @@ class _FaceScanViewState extends State<_FaceScanView> {
       // Aniqlik juda past bo'lsa ham ogohlantiramiz lekin yuborishga ruxsat beramiz.
       if (!locationResult.isTrusted && mounted) {
         setState(() {
-          _locationStatusText =
+          locationStatusText =
               'Aniqlik past (${locationResult.accuracyMeters.toStringAsFixed(0)}m), '
               'lekin GPS signali kuchayguncha kutilmoqda...';
         });
       }
     } on LocationServiceException catch (e) {
       if (mounted) {
-        setState(() => _locationStatusText = e.message);
+        setState(() => locationStatusText = e.message);
       }
       _isCapturing = false;
       return;
     } catch (e) {
       // Kutilmagan xato — baribir davom etamiz (koordinatlar null qoladi)
-      if (mounted) setState(() => _locationStatusText = 'GPS xatolik: $e');
+      if (mounted) setState(() => locationStatusText = 'GPS xatolik: $e');
     }
 
     if (!mounted) return;
