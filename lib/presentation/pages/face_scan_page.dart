@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,26 +10,28 @@ import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
 import '../widgets/liveness_visuals.dart';
-import 'attendance_submit_preview_page.dart';
+import 'attendance_result_page.dart';
 
 /// "Yuzni va manzil Tasdiqlash" sahifasi.
 /// Markazda doira shaklidagi kamera ko'rinishi, atrofida liveness progress halqasi,
 /// pastda esa foydalanuvchiga ko'rsatma matnlari chiqadi.
 class FaceScanPage extends StatelessWidget {
-  const FaceScanPage({super.key});
+  final String type;
+  const FaceScanPage({super.key, required this.type});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => AttendanceBloc(repository: AttendanceRepositoryImpl())
         ..add(const StartFaceScan()),
-      child: const _FaceScanView(),
+      child: _FaceScanView(type: type),
     );
   }
 }
 
 class _FaceScanView extends StatefulWidget {
-  const _FaceScanView();
+  final String type;
+  const _FaceScanView({required this.type});
 
   @override
   State<_FaceScanView> createState() => _FaceScanViewState();
@@ -41,7 +42,6 @@ class _FaceScanViewState extends State<_FaceScanView> {
   final FaceDetectionHelper _faceHelper = FaceDetectionHelper();
   bool _isStreaming = false;
   bool _blinkDetected = false;
-  Uint8List? _capturedImageBytes;
   double? _capturedLatitude;
   double? _capturedLongitude;
   double? _capturedAccuracyMeters;
@@ -81,33 +81,46 @@ class _FaceScanViewState extends State<_FaceScanView> {
 
   /// Kameradan kelayotgan har bir frame'ni ML Kit orqali tahlil qilib,
   /// natijani AttendanceBloc'ga FaceFrameDetected eventi sifatida yuboradi.
+  /// Release mode'da frame'lar juda tez keladi, shuning uchun 200ms throttle qo'llanadi.
   void _startImageStream() {
     if (_isStreaming || _cameraController == null) return;
     _isStreaming = true;
 
+    DateTime lastProcessedTime = DateTime.now().subtract(const Duration(seconds: 1));
+
     _cameraController!.startImageStream((CameraImage image) async {
-      final faces = await _faceHelper.processCameraImage(
-        image,
-        _cameraController!.description.sensorOrientation,
-      );
+      // Release mode'da frame tezligi juda yuqori, shuning uchun
+      // har 200ms da bitta frame'ni qayta ishlaymiz.
+      final now = DateTime.now();
+      if (now.difference(lastProcessedTime).inMilliseconds < 200) return;
+      lastProcessedTime = now;
 
-      if (faces.isNotEmpty) {
-        _blinkDetected = _blinkDetected || _faceHelper.isLivenessPassed;
-        // Joriy challenge holatini bloc'ga yuborish.
-        if (!mounted) return;
-        context.read<AttendanceBloc>().add(
-              FaceFrameDetected(
-                blinkDetected: _faceHelper.currentChallenge.index >
-                    LivenessChallenge.blink.index,
-                headTurnDetected: _faceHelper.isLivenessPassed,
-                instructionText: _faceHelper.currentInstructionText,
-              ),
-            );
+      try {
+        final faces = await _faceHelper.processCameraImage(
+          image,
+          _cameraController!.description.sensorOrientation,
+        );
 
-        // Liveness to'liq o'tganda - rasmni olib, tasdiqlashga yuboramiz.
-        if (_faceHelper.isLivenessPassed && !_isCapturing) {
-          await _captureAndSubmit();
+        if (faces.isNotEmpty) {
+          _blinkDetected = _blinkDetected || _faceHelper.isLivenessPassed;
+          // Joriy challenge holatini bloc'ga yuborish.
+          if (!mounted) return;
+          context.read<AttendanceBloc>().add(
+                FaceFrameDetected(
+                  blinkDetected: _faceHelper.currentChallenge.index >
+                      LivenessChallenge.blink.index,
+                  headTurnDetected: _faceHelper.isLivenessPassed,
+                  instructionText: _faceHelper.currentInstructionText,
+                ),
+              );
+
+          // Liveness to'liq o'tganda - rasmni olib, tasdiqlashga yuboramiz.
+          if (_faceHelper.isLivenessPassed && !_isCapturing) {
+            await _captureAndSubmit();
+          }
         }
+      } catch (e) {
+        debugPrint('FaceScan stream xatolik: $e');
       }
     });
   }
@@ -122,7 +135,6 @@ class _FaceScanViewState extends State<_FaceScanView> {
 
     final picture = await _cameraController!.takePicture();
     final bytes = await picture.readAsBytes();
-    _capturedImageBytes = bytes;
 
     // --- Xavfsiz lokatsiyani olish ---
     // SecureLocationService mock GPS ni aniqlaydi va bir nechta o'lchov qiladi.
@@ -165,7 +177,14 @@ class _FaceScanViewState extends State<_FaceScanView> {
     }
 
     if (!mounted) return;
-    context.read<AttendanceBloc>().add(SubmitAttendance(faceImageBytes: bytes));
+    context.read<AttendanceBloc>().add(SubmitAttendance(
+      faceImageBytes: bytes,
+      latitude: _capturedLatitude ?? 0.0,
+      longitude: _capturedLongitude ?? 0.0,
+      accuracy: _capturedAccuracyMeters ?? 0.0,
+      isMockLocation: _capturedIsMocked,
+      type: widget.type,
+    ));
   }
 
   void _showMockLocationWarning() {
@@ -212,20 +231,40 @@ class _FaceScanViewState extends State<_FaceScanView> {
       backgroundColor: AppColors.background,
       body: BlocConsumer<AttendanceBloc, AttendanceState>(
         listener: (context, state) {
-          if (state is AttendanceSuccess || state is AttendanceSubmitting) {
-            // Backend tayyor bo'lguncha developer preview sahifasiga o'tamiz.
-            // Backend tayyor bo'lganda bu yerga haqiqiy success logikasi qo'shiladi.
-            if (state is AttendanceSubmitting) return;
-            Navigator.of(context).pushReplacement(
+          if (state is AttendanceSubmitting) {
+            // Submitting state'ida yuklash sahifasini push qilamiz (FaceScanPage orqada qoladi va tinglashni davom ettiradi)
+            Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => AttendanceSubmitPreviewPage(
-                  faceImageBytes: _capturedImageBytes,
-                  latitude: _capturedLatitude,
-                  longitude: _capturedLongitude,
-                  accuracyMeters: _capturedAccuracyMeters,
-                  isMocked: _capturedIsMocked,
-                  timestamp: DateTime.now(),
+                builder: (_) => const AttendanceSubmittingPage(),
+              ),
+            );
+          } else if (state is AttendanceSuccess) {
+            // Barcha oldingi ochiq sahifalarni yopamiz (FaceScan, Submitting)
+            Navigator.of(context).pushAndRemoveUntil(
+              PageRouteBuilder(
+                opaque: false,
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    AttendanceResultPage(
+                  firstName: state.firstName,
+                  isLate: state.isLate,
+                  checkInTime: state.checkInTime,
+                  result: state.result,
                 ),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+              ),
+              (route) => route.isFirst,
+            );
+          } else if (state is AttendanceFailure) {
+            // Agar Submitting sahifasi ochiq bo'lsa, uni yopamiz
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage),
+                backgroundColor: Colors.red.shade700,
               ),
             );
           }
@@ -347,6 +386,9 @@ class _FaceScanViewState extends State<_FaceScanView> {
 
   String _instructionFromState(AttendanceState state) {
     if (state is AttendanceLivenessInProgress) return state.instructionText;
+    if (state is AttendanceLivenessPassed) {
+      return locationStatusText.isNotEmpty ? locationStatusText : 'Joylashuv aniqlanmoqda...';
+    }
     if (state is AttendanceSubmitting) return 'Tasdiqlanmoqda, kuting...';
     if (state is AttendanceSuccess) return 'Davomat muvaffaqiyatli belgilandi!';
     if (state is AttendanceFailure) return state.errorMessage;

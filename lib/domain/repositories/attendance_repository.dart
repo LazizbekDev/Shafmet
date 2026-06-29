@@ -13,5 +13,8 @@ abstract class AttendanceRepository {
     required Uint8List faceImageBytes,
     required double latitude,
     required double longitude,
+    required double accuracy,
+    required bool isMockLocation,
+    required String type,
   });
 }

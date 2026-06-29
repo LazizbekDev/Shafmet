@@ -1,20 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/network/api_client.dart';
 import '../../domain/repositories/attendance_repository.dart';
 import '../models/attendance_model.dart';
 
-/// AttendanceRepository'ning konkret (data layer) implementatsiyasi.
-/// Tashqi dunyo (Dio HTTP client, Geolocator) bilan ishlash shu yerda amalga oshadi.
 class AttendanceRepositoryImpl implements AttendanceRepository {
-  final Dio _dio;
-  final String _baseUrl;
-
-  AttendanceRepositoryImpl({Dio? dio, String baseUrl = 'https://api.example.uz'})
-      : _dio = dio ?? Dio(),
-        _baseUrl = baseUrl;
+  final Dio _dio = ApiClient().dio;
 
   @override
   Future<bool> isWithinOfficeArea() async {
@@ -42,28 +35,38 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
     required Uint8List faceImageBytes,
     required double latitude,
     required double longitude,
+    required double accuracy,
+    required bool isMockLocation,
+    required String type,
   }) async {
     try {
-      final model = AttendanceModel(
-        userId: 'current_user_id', // Auth servisidan olinadi
-        deviceId: 'device_unique_id', // device_info_plus orqali olinadi
-        latitude: latitude,
-        longitude: longitude,
-        faceImageBase64: base64Encode(faceImageBytes),
-        timestamp: DateTime.now(),
-      );
+      final formData = FormData.fromMap({
+        'image': MultipartFile.fromBytes(faceImageBytes, filename: 'face_scan.jpg'),
+        'latitude': latitude,
+        'longitude': longitude,
+        'accuracy': accuracy,
+        'is_mock_location': isMockLocation,
+        'device_id': 'test_device_001',
+        'type': type,
+      });
 
-      // API Data Packet (Stylized) -> Backendga (Django) yuborish.
       final response = await _dio.post(
-        '$_baseUrl/api/attendance/mark/',
-        data: model.toJson(),
+        'attendance/submit',
+        data: formData,
       );
 
-      return AttendanceResult.fromJson(response.data);
+      final isSuccess = response.statusCode == 200 || response.statusCode == 201;
+      if (isSuccess && response.data != null) {
+        return AttendanceResult.fromJson(response.data as Map<String, dynamic>);
+      }
+      return AttendanceResult(
+        success: isSuccess,
+        message: 'Muvaffaqiyatli jo`natildi',
+      );
     } on DioException catch (e) {
       return AttendanceResult(
         success: false,
-        message: e.response?.data['message'] ?? 'Server bilan aloqa xatosi yuz berdi',
+        message: e.response?.data?['message'] ?? 'Server bilan aloqa xatosi yuz berdi',
       );
     } catch (e) {
       return AttendanceResult(success: false, message: 'Kutilmagan xatolik: $e');

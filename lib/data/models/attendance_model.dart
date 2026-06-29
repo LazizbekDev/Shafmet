@@ -47,19 +47,34 @@ class AttendanceModel {
 class AttendanceResult {
   final bool success;
   final String message;
-  final double? matchConfidence; // DeepFace orqali yuz mosligi foizi
+  final double? matchConfidence;
+  final String firstName;
+  final bool isLate;
+  final DateTime? timeLogged;
+  final String type;
 
   AttendanceResult({
     required this.success,
     required this.message,
     this.matchConfidence,
+    this.firstName = '',
+    this.isLate = false,
+    this.timeLogged,
+    this.type = 'check-in',
   });
 
   factory AttendanceResult.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? json;
+    final timeStr = data['time_logged'];
+    final time = timeStr != null ? DateTime.tryParse(timeStr) : null;
     return AttendanceResult(
-      success: json['success'] ?? false,
+      success: json['status'] == 'success' || (json['success'] ?? true),
       message: json['message'] ?? '',
-      matchConfidence: json['match_confidence']?.toDouble(),
+      matchConfidence: data['match_percentage']?.toDouble(),
+      firstName: data['user']?['first_name'] ?? data['first_name'] ?? '',
+      isLate: data['is_late'] ?? false,
+      timeLogged: time,
+      type: data['type'] ?? 'check-in',
     );
   }
 }

@@ -26,19 +26,34 @@ class FaceFrameDetected extends AttendanceEvent {
     required this.instructionText,
   });
 
+  // Equatable props-ni qasddan bo'sh qoldiramiz — har bir frame event
+  // unikal bo'lishi kerak, aks holda release mode'da bloc duplikat eventlarni
+  // o'tkazib yuboradi va liveness progress harakatlanmaydi.
   @override
-  List<Object?> get props => [blinkDetected, headTurnDetected, instructionText];
+  List<Object?> get props => [];
 }
 
 /// Liveness jarayoni muvaffaqiyatli tugagach, olingan yuz rasmi bilan
 /// joylashuvni tekshirib, backendga yuborish uchun.
 class SubmitAttendance extends AttendanceEvent {
   final Uint8List faceImageBytes;
+  final double latitude;
+  final double longitude;
+  final double accuracy;
+  final bool isMockLocation;
+  final String type;
 
-  const SubmitAttendance({required this.faceImageBytes});
+  const SubmitAttendance({
+    required this.faceImageBytes,
+    required this.latitude,
+    required this.longitude,
+    required this.accuracy,
+    required this.isMockLocation,
+    this.type = 'check-in',
+  });
 
   @override
-  List<Object?> get props => [faceImageBytes];
+  List<Object?> get props => [faceImageBytes, latitude, longitude, accuracy, isMockLocation, type];
 }
 
 /// Jarayonni qaytadan boshlash (masalan, xatolikdan keyin "Qayta urinish").

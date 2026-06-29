@@ -40,10 +40,10 @@ class SecureLocationResult {
 class SecureLocationService {
 
   /// Nechta o'lchov olinadi va eng anig'i tanlanadi.
-  static const int _samplesCount = 3;
+  static const int _samplesCount = 1;
 
   /// Bir o'lchov uchun max kutish vaqti.
-  static const Duration _singleReadTimeout = Duration(seconds: 12);
+  static const Duration _singleReadTimeout = Duration(seconds: 5);
 
   /// Xavfsiz lokatsiyani oladi.
   ///
@@ -67,7 +67,7 @@ class SecureLocationService {
             'Joylashuv aniqlanmoqda... (${i + 1}/$_samplesCount)');
 
         final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.bestForNavigation,
+          desiredAccuracy: LocationAccuracy.high,
           timeLimit: _singleReadTimeout,
         );
 
@@ -87,9 +87,15 @@ class SecureLocationService {
     }
 
     if (readings.isEmpty) {
-      throw const LocationServiceException(
-        'Joylashuvni aniqlab bo\'lmadi. GPS signali yo\'q yoki ruxsat berilmagan.',
-      );
+      onProgress?.call('So\'nggi ma\'lum joylashuv olinmoqda...');
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        readings.add(lastKnown);
+      } else {
+        throw const LocationServiceException(
+          'Joylashuvni aniqlab bo\'lmadi. GPS signali yo\'q.',
+        );
+      }
     }
 
     // 3. Eng aniq o'lchovni tanlash (accuracy = kichik qiymat = yaxshiroq)

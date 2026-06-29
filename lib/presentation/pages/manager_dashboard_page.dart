@@ -126,7 +126,7 @@ class _ManagerDashboardPageState extends State<ManagerDashboardPage> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FaceIdPrepPage()),
+          MaterialPageRoute(builder: (_) => const FaceIdPrepPage(type: 'check-in')),
         );
       },
       child: Container(

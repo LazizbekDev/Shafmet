@@ -1,8 +1,9 @@
+import 'package:attendance_app/presentation/pages/face_id_prep_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../widgets/dashboard_shared_widgets.dart';
 import '../widgets/profile_tab_widget.dart';
-import 'face_id_prep_page.dart';
 
 class AttendanceDashboardPage extends StatefulWidget {
   const AttendanceDashboardPage({super.key});
@@ -13,6 +14,24 @@ class AttendanceDashboardPage extends StatefulWidget {
 
 class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   int _selectedNavIndex = 0;
+  String _firstName = 'Hodim';
+  String _lastName = '';
+  String _position = 'Ishchi';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('user_first_name') ?? 'Hodim';
+      _lastName = prefs.getString('user_last_name') ?? '';
+      _position = prefs.getString('user_position') ?? 'Ishchi';
+    });
+  }
 
   void _onNavTapped(int index) {
     setState(() => _selectedNavIndex = index);
@@ -95,10 +114,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   }
 
   Widget _buildProfileTab() {
-    return const ProfileTabWidget(
-      name: 'Javohir Hamroyev',
-      role: 'Oddiy Hodim',
-      position: 'Ichki do\'kon ishchisi',
+    return ProfileTabWidget(
+      name: '$_firstName $_lastName',
+      role: 'Xodim',
+      position: _position,
     );
   }
 
@@ -106,10 +125,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'salom',
               style: TextStyle(
                 color: AppColors.textGrey,
@@ -118,8 +137,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               ),
             ),
             Text(
-              'javohir',
-              style: TextStyle(
+              _firstName,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
@@ -140,100 +159,72 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   }
 
   Widget _buildUserCard(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildActionCard(
+            context,
+            title: 'Ishga Kelish',
+            icon: Icons.login_rounded,
+            color: const Color(0xFF5A9DFF),
+            type: 'check-in',
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildActionCard(
+            context,
+            title: 'Ishdan Ketish',
+            icon: Icons.logout_rounded,
+            color: Colors.orange.shade800,
+            type: 'check-out',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String type,
+  }) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FaceIdPrepPage()),
+          MaterialPageRoute(builder: (_) => FaceIdPrepPage(type: type)),
         );
       },
       child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5A9DFF), Color(0xFF3D7FFF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: color,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, color: AppColors.primaryBlue, size: 30),
-                ),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Javohir Hamroyev',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'ichki do\'kon ishchisi',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: Colors.white),
-              ],
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              child: Icon(icon, color: Colors.white, size: 28),
             ),
-            const SizedBox(height: 16),
-            Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.calendar_month_outlined, color: Colors.white.withValues(alpha: 0.9), size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'chor - 16 - iyun',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, color: Colors.white.withValues(alpha: 0.9), size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'face id dan o\'tish',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ],
         ),

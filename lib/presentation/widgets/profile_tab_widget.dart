@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/services/auth_service.dart';
 import 'liquid_widgets.dart';
 import '../pages/login_page.dart';
 
@@ -360,8 +361,12 @@ class ProfileTabWidget extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          // Call real API logout
+                          await AuthService.logout();
+
                           // Close bottom sheet then navigate to login
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(builder: (_) => const LoginPage()),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../widgets/dashboard_shared_widgets.dart';
 import 'face_scan_page.dart';
 import 'login_page.dart';
 
 class FaceIdPrepPage extends StatefulWidget {
-  const FaceIdPrepPage({super.key});
+  final String type;
+  const FaceIdPrepPage({super.key, required this.type});
 
   @override
   State<FaceIdPrepPage> createState() => _FaceIdPrepPageState();
@@ -13,6 +15,20 @@ class FaceIdPrepPage extends StatefulWidget {
 
 class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
   int _selectedNavIndex = 0;
+  String _firstName = 'Hodim';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('user_first_name') ?? 'Hodim';
+    });
+  }
 
   void _onNavTapped(int index) {
     if (index == 3) {
@@ -55,10 +71,10 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'salom',
               style: TextStyle(
                 color: AppColors.textGrey,
@@ -67,8 +83,8 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
               ),
             ),
             Text(
-              'javohir',
-              style: TextStyle(
+              _firstName,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
@@ -89,6 +105,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
   }
 
   Widget _buildDetailsCard(BuildContext context) {
+    final isCheckIn = widget.type == 'check-in';
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -108,18 +125,18 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
         children: [
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 26,
-                backgroundColor: Colors.black,
-                child: Icon(Icons.alarm, color: Colors.white, size: 28),
+                backgroundColor: isCheckIn ? Colors.black : Colors.orange.shade800,
+                child: const Icon(Icons.alarm, color: Colors.white, size: 28),
               ),
               const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Ishga Kelish',
-                    style: TextStyle(
+                  Text(
+                    isCheckIn ? 'Ishga Kelish' : 'Ishdan Ketish',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark,
@@ -139,7 +156,9 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
           ),
           const SizedBox(height: 40),
           Text(
-            'ishga kelganligizni tasdiqlang va\nbemalol oz ish faoliyatingizni davm\nettiring',
+            isCheckIn 
+              ? 'Ishga kelganligizni tasdiqlang va\nbemalol o\'z ish faoliyatingizni davom\nettiring'
+              : 'Ishdan ketayotganingizni tasdiqlang va\nkuningiz xayrli yakunlansin',
             style: TextStyle(
               fontSize: 14,
               color: AppColors.textGrey.withValues(alpha: 0.8),
@@ -148,7 +167,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'rasmga olish orqali face id dan oting',
+            'Rasmga olish orqali face id dan o\'ting',
             style: TextStyle(
               fontSize: 13,
               color: AppColors.primaryBlue,
@@ -162,7 +181,7 @@ class _FaceIdPrepPageState extends State<FaceIdPrepPage> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const FaceScanPage()),
+                  MaterialPageRoute(builder: (_) => FaceScanPage(type: widget.type)),
                 );
               },
               style: ElevatedButton.styleFrom(

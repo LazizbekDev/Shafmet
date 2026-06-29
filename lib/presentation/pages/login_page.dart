@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../data/services/dummy_auth_service.dart';
+import '../../data/services/auth_service.dart';
 import '../../domain/models/user_role.dart';
 import 'attendance_dashboard_page.dart';
 import 'manager_dashboard_page.dart';
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
     
-    final role = await DummyAuthService.login(phone, password);
+    final role = await AuthService.login(phone, password);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 40),
                 _buildTextField(
                   controller: _phoneController,
-                  hint: 'Telefon Raqam',
+                  hint: 'Login (Username)',
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(

@@ -35,11 +35,19 @@ class AttendanceSubmitting extends AttendanceState {}
 /// Backend muvaffaqiyatli javob qaytardi - davomat belgilandi.
 class AttendanceSuccess extends AttendanceState {
   final AttendanceResult result;
+  final String firstName;
+  final bool isLate;
+  final DateTime checkInTime;
 
-  const AttendanceSuccess(this.result);
+  AttendanceSuccess(
+    this.result, {
+    this.firstName = '',
+    this.isLate = false,
+    DateTime? checkInTime,
+  }) : checkInTime = checkInTime ?? DateTime.now();
 
   @override
-  List<Object?> get props => [result];
+  List<Object?> get props => [result, firstName, isLate];
 }
 
 /// Xatolik (foydalanuvchi ofis hududida emas, yuz mos kelmadi va h.k.).

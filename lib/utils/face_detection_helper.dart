@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:flutter/foundation.dart' show WriteBuffer, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
@@ -101,7 +101,6 @@ class FaceDetectionHelper {
   }
 
   InputImage? _convertCameraImage(CameraImage image, int sensorOrientation) {
-    final bytes = _concatenatePlanes(image.planes);
     final imageRotation =
         InputImageRotationValue.fromRawValue(sensorOrientation) ??
             InputImageRotation.rotation0deg;
@@ -110,6 +109,25 @@ class FaceDetectionHelper {
             (defaultTargetPlatform == TargetPlatform.iOS
                 ? InputImageFormat.bgra8888
                 : InputImageFormat.nv21);
+
+    // NV21 formatida Android'da plane'larni to'g'ri birlashtirish kerak.
+    // Release mode'da WriteBuffer bilan birlashtirish ba'zan noto'g'ri
+    // natija beradi, shuning uchun to'g'ridan-to'g'ri byte nusxalaymiz.
+    final Uint8List bytes;
+    if (image.planes.length == 1) {
+      bytes = image.planes.first.bytes;
+    } else {
+      int totalSize = 0;
+      for (final plane in image.planes) {
+        totalSize += plane.bytes.length;
+      }
+      bytes = Uint8List(totalSize);
+      int offset = 0;
+      for (final plane in image.planes) {
+        bytes.setRange(offset, offset + plane.bytes.length, plane.bytes);
+        offset += plane.bytes.length;
+      }
+    }
 
     return InputImage.fromBytes(
       bytes: bytes,
@@ -120,14 +138,6 @@ class FaceDetectionHelper {
         bytesPerRow: image.planes.first.bytesPerRow,
       ),
     );
-  }
-
-  Uint8List _concatenatePlanes(List<Plane> planes) {
-    final allBytes = WriteBuffer();
-    for (final plane in planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    return allBytes.done().buffer.asUint8List();
   }
 
   void dispose() {
